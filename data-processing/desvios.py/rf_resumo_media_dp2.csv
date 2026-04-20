@@ -1,0 +1,2 @@
+Modelo,R_media,R_dp,RMSE_media,RMSE_dp,MAE_media,MAE_dp
+Random Forest,0.9903,0.0002,90.5,0.97,51.19,0.56

@@ -1,0 +1,2 @@
+params,R_mean,RMSE_mean,MAE_mean
+"{'n_estimators': 200, 'max_depth': 20, 'min_samples_split': 2, 'min_samples_leaf': 2}",0.9529995669591329,193.90243104768462,113.70319451327673

@@ -1,0 +1,2 @@
+params,R_mean,RMSE_mean,MAE_mean
+"{'kernel': 'rbf', 'C': 1500, 'epsilon': 0.05, 'gamma': 0.5}",0.9162069435585117,252.05460372503848,158.28835864690367

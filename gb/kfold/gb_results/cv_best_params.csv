@@ -1,0 +1,2 @@
+params,R_mean,RMSE_mean,MAE_mean
+"{'loss': 'squared_error', 'learning_rate': 0.03, 'max_leaf_nodes': 63, 'min_samples_leaf': 10, 'max_features': 0.6}",0.9697333922274215,154.24750271255724,87.29762639370018
