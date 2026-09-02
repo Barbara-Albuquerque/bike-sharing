@@ -11,17 +11,13 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 
 
-# ======================================================
-# Configuração de saída
-# ======================================================
+# Configuração
 output_dir = "rf-melhorado/kfold/results_step1_cv"
 os.makedirs(output_dir, exist_ok=True)
 
 
-# ======================================================
-# 1. Carregamento dos dados
-# ======================================================
-df = pd.read_csv("data-processing\imputed-values\SeoulBikeData_clean_imputed.csv", encoding="utf-8")
+# 1. Dados
+df = pd.read_csv("data-processing/imputed-values/SeoulBikeData_clean_imputed.csv", encoding="utf-8")
 
 features = [
     "Hour",
@@ -45,9 +41,7 @@ X = df[features]
 y = df[target]
 
 
-# ======================================================
-# 2. Divisão treino/teste e normalização
-# ======================================================
+# 2. Treino/teste e normalização
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.3, shuffle=True
 )
@@ -57,9 +51,7 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.transform(X_test)
 
 
-# ======================================================
-# 3. Grade de hiperparâmetros
-# ======================================================
+# 3. Hiperparâmetros
 param_grid = {
     "n_estimators": [100, 200, 300],
     "max_depth": [None, 20, 10],
@@ -70,9 +62,7 @@ param_grid = {
 param_combinations = list(product(*param_grid.values()))
 
 
-# ======================================================
-# 4. Validação cruzada (Step 1)
-# ======================================================
+# 4. Validação cruzada
 results = []
 
 kf = KFold(n_splits=10, shuffle=True)
@@ -121,9 +111,7 @@ for n_est, max_d, min_split, min_leaf in param_combinations:
     })
 
 
-# ======================================================
-# 5. Seleção da melhor combinação
-# ======================================================
+# 5. Melhor combinação
 best = sorted(
     results,
     key=lambda x: (-x["R_mean"], x["RMSE_mean"], x["MAE_mean"])
@@ -144,9 +132,7 @@ best_df.to_csv(
 )
 
 
-# ======================================================
 # 6. Resultados completos
-# ======================================================
 df_results = pd.DataFrame(results)
 df_expanded = pd.json_normalize(df_results.to_dict(orient="records"))
 
@@ -156,9 +142,7 @@ df_expanded.to_csv(
 )
 
 
-# ======================================================
-# 7. Top 5 por métrica
-# ======================================================
+# 7. Top 5
 top5_r = df_expanded.sort_values(by="R_mean", ascending=False).head(5)
 top5_r.to_csv(
     os.path.join(output_dir, "cv_top5_by_R.csv"),
@@ -187,9 +171,7 @@ print("\nTop 5 combinações por MAE:")
 print(df_expanded.sort_values(by="MAE_mean", ascending=False).head(5))
 
 
-# ======================================================
-# 8. Análise agrupada por hiperparâmetro
-# ======================================================
+# 8. Agrupamento por parâmetro
 for param in [
     "params.n_estimators",
     "params.max_depth",

@@ -10,7 +10,7 @@ def load_model(path):
     return df_test.iloc[:72].reset_index(drop=True)
 
 
-# Carregar dados
+# Dados
 df_hgbr = load_model("gb/results/hgbr_results/hgbr_step2_preds.csv")
 df_rf   = load_model("rf-base/results/rf_base_step2_preds.csv")
 df_svr  = load_model("svm/results/svr_results/svr_step2_preds.csv")
@@ -39,7 +39,6 @@ for ax, (nome, df_model) in zip(axes, modelos):
 
 axes[0].set_ylabel("Bicicletas alugadas", fontsize=14)
 
-# Colocar legenda só no último subplot
 axes[-1].legend()
 
 plt.tight_layout()

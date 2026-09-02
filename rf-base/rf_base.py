@@ -13,16 +13,12 @@ from scipy.stats import pearsonr
 import matplotlib.pyplot as plt
 
 
-# ======================================================
-# Configuração de saída
-# ======================================================
+# Configuração
 output_dir = "rf-base/results"
 os.makedirs(output_dir, exist_ok=True)
 
 
-# ======================================================
-# 1. Leitura dos dados e seleção das variáveis
-# ======================================================
+# 1. Dados
 df = pd.read_csv("SeoulBikeData_original.csv", encoding="utf-8")
 
 features = [
@@ -43,25 +39,20 @@ X = df[features]
 y = df[target]
 
 
-# ======================================================
-# 2. Inicialização das estruturas de métricas
-# ======================================================
+# 2. Métricas
 r_list, rmse_list, mae_list = [], [], []
 r_train_list, rmse_train_list, mae_train_list = [], [], []
 
-preds_rows = []  # armazenar previsões de treino e teste por execução
+preds_rows = []
 
 
-# ======================================================
-# 3. Step 2 – 10 execuções com splits aleatórios (70/30)
-# ======================================================
+# 3. Treino e teste
 print("\nSTEP 2 – 10 execuções com divisão 70/30\n")
 
 for i in range(10):
 
     print(f"Execução {i + 1}/10")
 
-    # Embaralhar dataset completo antes do split
     X_shuffled, y_shuffled = shuffle(X, y)
 
     X_train_raw, X_test_raw, y_train, y_test = train_test_split(
@@ -70,12 +61,10 @@ for i in range(10):
         test_size=0.3
     )
 
-    # Normalização
     scaler = MinMaxScaler()
     X_train = scaler.fit_transform(X_train_raw)
     X_test = scaler.transform(X_test_raw)
 
-    # Modelo Random Forest
     model = RandomForestRegressor(
         n_estimators=200,
         max_depth=None,
@@ -84,10 +73,8 @@ for i in range(10):
         n_jobs=-1
     )
 
-    # Treinamento
     model.fit(X_train, y_train)
 
-    # Avaliação no treino
     y_pred_train = model.predict(X_train)
 
     r_train, _ = pearsonr(y_train, y_pred_train)
@@ -100,7 +87,6 @@ for i in range(10):
         f"MAE={mae_train:.2f} cnt/h"
     )
 
-    # Avaliação no teste
     y_pred = model.predict(X_test)
 
     r, _ = pearsonr(y_test, y_pred)
@@ -113,7 +99,6 @@ for i in range(10):
         f"MAE={mae:.2f} cnt/h"
     )
 
-    # Armazenar previsões da execução (treino e teste)
     preds_rows.append(pd.DataFrame({
         "Execucao": i + 1,
         "Conjunto": "Treino",
@@ -128,7 +113,6 @@ for i in range(10):
         "y_pred": np.asarray(y_pred)
     }))
 
-    # Armazenar métricas
     r_train_list.append(r_train)
     rmse_train_list.append(rmse_train)
     mae_train_list.append(mae_train)
@@ -138,9 +122,7 @@ for i in range(10):
     mae_list.append(mae)
 
 
-# ======================================================
-# 4. Resultados médios após 10 execuções
-# ======================================================
+# 4. Resultados médios
 print("\nMÉDIAS APÓS 10 EXECUÇÕES (TREINO):")
 print(f"R médio   : {np.mean(r_train_list):.4f}")
 print(f"RMSE médio: {np.mean(rmse_train_list):.2f}")
@@ -152,9 +134,7 @@ print(f"RMSE médio: {np.mean(rmse_list):.2f} cnt/h")
 print(f"MAE médio : {np.mean(mae_list):.2f} cnt/h")
 
 
-# ======================================================
-# 5. Função para gráfico predito vs real
-# ======================================================
+# 5. Gráfico predito vs real
 def plot_pred_vs_true(y_true, y_pred, title, ax):
 
     ax.scatter(y_true, y_pred, color="magenta", s=5, label="Dados")
@@ -190,9 +170,7 @@ def plot_pred_vs_true(y_true, y_pred, title, ax):
     ax.legend()
 
 
-# ======================================================
-# 6. Gráficos treino e teste (última execução)
-# ======================================================
+# 6. Figura treino/teste
 fig, axs = plt.subplots(1, 2, figsize=(12, 5))
 
 plot_pred_vs_true(y_train, y_pred_train, "(a) Train data", axs[0])
@@ -210,9 +188,7 @@ plt.close()
 
 
 
-# ======================================================
-# 7. Salvamento dos CSVs de métricas por execução
-# ======================================================
+# 7. Métricas por execução
 df_treino = pd.DataFrame({
     "Execucao": range(1, 11),
     "R": r_train_list,
@@ -240,9 +216,7 @@ df_teste.to_csv(
 print("\nArquivos salvos: rf_base_step2_treino.csv e rf_base_step2_teste.csv")
 
 
-# ======================================================
-# 8. Salvamento das médias em CSV
-# ======================================================
+# 8. Médias
 df_medias = pd.DataFrame({
     "Conjunto": ["Treino", "Teste"],
     "R_medio": [np.mean(r_train_list), np.mean(r_list)],
@@ -258,9 +232,7 @@ df_medias.to_csv(
 print("Arquivo de médias salvo: rf_base_step2_medias.csv")
 
 
-# ======================================================
-# 9. Salvamento de todas as previsões
-# ======================================================
+# 9. Previsões
 df_preds = pd.concat(preds_rows, ignore_index=True)
 
 df_preds.to_csv(
@@ -270,9 +242,7 @@ df_preds.to_csv(
 
 print("Arquivo de previsões salvo: rf_base_step2_preds.csv")
 
-# ======================================================
-# 10. Feature importance (última execução)
-# ======================================================
+# 10. Importância das variáveis
 importances = model.feature_importances_
 
 df_importances = pd.DataFrame({
@@ -286,9 +256,7 @@ df_importances.to_csv(
 )
 
 print("Arquivo de feature importance salvo: rf_base_feature_importance.csv")
-# ======================================================
-# Gráfico de Feature Importance
-# ======================================================
+# 11. Gráfico de importância
 plt.figure(figsize=(8, 5))
 
 plt.barh(
@@ -297,7 +265,7 @@ plt.barh(
     color="purple"
 )
 
-plt.gca().invert_yaxis()  # feature mais importante no topo
+plt.gca().invert_yaxis()
 plt.xlabel("Importance")
 plt.title("Random Forest Feature Importance")
 

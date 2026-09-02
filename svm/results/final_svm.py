@@ -14,24 +14,18 @@ from sklearn.linear_model import LinearRegression
 from sklearn.inspection import permutation_importance
 
 
-# ======================================================
-# Configuração de saída
-# ======================================================
+# Configuração
 output_dir = "svm/results/svr_results"
 os.makedirs(output_dir, exist_ok=True)
 
 
-# ======================================================
-# Função auxiliar: RMSE
-# ======================================================
+# RMSE
 def root_mean_squared_error(y_true, y_pred):
     return np.sqrt(mean_squared_error(y_true, y_pred))
 
 
-# ======================================================
-# 1. Leitura dos dados e seleção das variáveis
-# ======================================================
-df = pd.read_csv("data-processing\imputed-values\SeoulBikeData_clean_imputed.csv", encoding="utf-8")
+# 1. Dados
+df = pd.read_csv("data-processing/imputed-values/SeoulBikeData_clean_imputed.csv", encoding="utf-8")
 
 
 features = [
@@ -56,9 +50,7 @@ X = df[features]
 y = df[target]
 
 
-# ======================================================
-# 2. Inicialização das estruturas de métricas
-# ======================================================
+# 2. Métricas
 r_list, rmse_list, mae_list = [], [], []
 r_train_list, rmse_train_list, mae_train_list = [], [], []
 
@@ -66,16 +58,13 @@ preds_rows = []
 perm_importances = []
 
 
-# ======================================================
-# 3. Step 2 – 10 execuções com splits aleatórios (70/30)
-# ======================================================
+# 3. Treino e teste
 print("\nSTEP 2 – 10 execuções com divisão 70/30\n")
 
 for i in range(10):
 
     print(f"Execução {i + 1}/10")
 
-    # Embaralhar dataset completo
     X_shuffled, y_shuffled = shuffle(X, y)
 
     X_train_raw, X_test_raw, y_train, y_test = train_test_split(
@@ -84,16 +73,10 @@ for i in range(10):
         test_size=0.3
     )
 
-    # --------------------------------------------------
-    # Normalização 
-    # --------------------------------------------------
     scaler = StandardScaler()
     X_train = scaler.fit_transform(X_train_raw)
     X_test = scaler.transform(X_test_raw)
 
-    # --------------------------------------------------
-    # Modelo SVR
-    # --------------------------------------------------
     model = SVR(
         kernel="rbf",
         C=1500,
@@ -101,12 +84,8 @@ for i in range(10):
         gamma=0.5
     )
 
-    # Treinamento
     model.fit(X_train, y_train)
 
-    # --------------------------------------------------
-    # Avaliação no treino
-    # --------------------------------------------------
     y_pred_train = model.predict(X_train)
 
     r_train, _ = pearsonr(y_train, y_pred_train)
@@ -119,9 +98,6 @@ for i in range(10):
         f"MAE={mae_train:.2f} cnt/h"
     )
 
-    # --------------------------------------------------
-    # Avaliação no teste
-    # --------------------------------------------------
     y_pred = model.predict(X_test)
 
     r, _ = pearsonr(y_test, y_pred)
@@ -134,9 +110,6 @@ for i in range(10):
         f"MAE={mae:.2f} cnt/h"
     )
 
-    # # --------------------------------------------------
-    # # Permutation Importance (teste)
-    # # --------------------------------------------------
     result = permutation_importance(
         model,
         X_test,
@@ -147,9 +120,6 @@ for i in range(10):
 
     perm_importances.append(result.importances_mean)
 
-    # --------------------------------------------------
-    # Armazenar previsões
-    # --------------------------------------------------
     preds_rows.append(pd.DataFrame({
         "Execucao": i + 1,
         "Conjunto": "Treino",
@@ -164,9 +134,6 @@ for i in range(10):
         "y_pred": y_pred
     }))
 
-    # --------------------------------------------------
-    # Armazenar métricas
-    # --------------------------------------------------
     r_train_list.append(r_train)
     rmse_train_list.append(rmse_train)
     mae_train_list.append(mae_train)
@@ -176,9 +143,7 @@ for i in range(10):
     mae_list.append(mae)
 
 
-# ======================================================
-# 4. Resultados médios após 10 execuções
-# ======================================================
+# 4. Resultados médios
 print("\nMÉDIAS APÓS 10 EXECUÇÕES (TREINO):")
 print(f"R médio   : {np.mean(r_train_list):.4f}")
 print(f"RMSE médio: {np.mean(rmse_train_list):.2f}")
@@ -190,9 +155,7 @@ print(f"RMSE médio: {np.mean(rmse_list):.2f}")
 print(f"MAE médio : {np.mean(mae_list):.2f}")
 
 
-# ======================================================
-# 5. Função para gráfico predito vs real
-# ======================================================
+# 5. Gráfico predito vs real
 def plot_pred_vs_true(y_true, y_pred, title, ax):
 
     ax.scatter(y_true, y_pred, color="blue", s=5, label="Dados")
@@ -228,9 +191,7 @@ def plot_pred_vs_true(y_true, y_pred, title, ax):
     ax.legend()
 
 
-# ======================================================
-# 6. Gráficos treino e teste (última execução)
-# ======================================================
+# 6. Figura treino/teste
 fig, axs = plt.subplots(1, 2, figsize=(12, 5))
 
 plot_pred_vs_true(y_train, y_pred_train, "(a) Train data", axs[0])
@@ -245,9 +206,7 @@ plt.savefig(
 plt.close()
 
 
-# ======================================================
-# 7. CSVs de métricas por execução
-# ======================================================
+# 7. Métricas por execução
 pd.DataFrame({
     "Execucao": range(1, 11),
     "R": r_train_list,
@@ -269,9 +228,7 @@ pd.DataFrame({
 )
 
 
-# ======================================================
-# 8. Médias em CSV
-# ======================================================
+# 8. Médias
 pd.DataFrame({
     "Conjunto": ["Treino", "Teste"],
     "R_medio": [np.mean(r_train_list), np.mean(r_list)],
@@ -283,18 +240,14 @@ pd.DataFrame({
 )
 
 
-# ======================================================
-# 9. Todas as previsões
-# ======================================================
+# 9. Previsões
 pd.concat(preds_rows, ignore_index=True).to_csv(
     os.path.join(output_dir, "svr_step2_preds.csv"),
     index=False
 )
 
 
-# ======================================================
-# 10. Feature importance por permutação (média)
-# ======================================================
+# 10. Importância das variáveis
 df_perm = pd.DataFrame(
     perm_importances,
     columns=features
@@ -307,9 +260,7 @@ df_perm.to_csv(
 )
 
 
-# ======================================================
-# 11. Gráfico de Feature Importance
-# ======================================================
+# 11. Gráfico de importância
 df_mean_imp = df_perm.loc["Média"].sort_values()
 
 plt.figure(figsize=(8, 5))
