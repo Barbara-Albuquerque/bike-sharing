@@ -24,7 +24,7 @@ fig, axes = plt.subplots(1, 3, figsize=(18,5), sharey=True)
 modelos = [
     ("RF-NGO2022", df_rf),
     ("SVR", df_svr),
-    ("HGBR", df_hgbr)
+    ("HBGBR", df_hgbr)
 ]
 
 for ax, (nome, df_model) in zip(axes, modelos):

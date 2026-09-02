@@ -14,7 +14,7 @@ from sklearn.metrics import mean_absolute_error, root_mean_squared_error
 # ======================================================
 # Configuração de saída
 # ======================================================
-output_dir = "rf/kfold/results_step1_cv"
+output_dir = "rf-melhorado/kfold/results_step1_cv"
 os.makedirs(output_dir, exist_ok=True)
 
 

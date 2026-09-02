@@ -235,7 +235,7 @@ def plot_pred_vs_true(y_true, y_pred, title, ax):
 
 
 # ======================================================
-# 6. Gráficos treino e teste (última execução)
+# 6. Gráficos treino e teste 
 # ======================================================
 fig, axs = plt.subplots(1, 2, figsize=(12, 5))
 

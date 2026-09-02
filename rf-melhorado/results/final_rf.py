@@ -16,7 +16,7 @@ import matplotlib.pyplot as plt
 # ======================================================
 # Configuração de saída
 # ======================================================
-output_dir = "rf/results/final-results"
+output_dir = "rf-melhorado/results/final-results"
 os.makedirs(output_dir, exist_ok=True)
 
 
